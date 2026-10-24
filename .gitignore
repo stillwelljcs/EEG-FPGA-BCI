@@ -1,0 +1,11 @@
+fpga/vivado/
+*.runs/
+*.cache/
+*.hw/
+*.ip_user_files/
+*.xpr
+*.jou
+*.log
+__pycache__/
+.ipynb_checkpoints/
+.venv/

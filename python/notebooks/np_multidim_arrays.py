@@ -8,3 +8,5 @@ mask = (label >= 3) & (label <= 8)
 
 print(mask)
 print(nums[:, 0])
+
+print(nums[1] - label[4])

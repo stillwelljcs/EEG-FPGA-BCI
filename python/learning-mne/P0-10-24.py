@@ -4,7 +4,6 @@ import scipy.signal
 import matplotlib.pyplot as plt
 from mne.datasets import eegbci
 
-
 subj = input("Enter subject number: ")
 files = eegbci.load_data(int(subj), runs=[4, 8, 12]) # load subject x L/R fist movement data
 raw = mne.concatenate_raws([mne.io.read_raw_edf(f, preload=True) for f in files]) #compiles multiple different recordings into one

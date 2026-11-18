@@ -80,19 +80,28 @@ def compute_ERD():
 
     t1_check = True
     t2_check = True
+
+    T1_drops = []
+    T2_drops = []
+
     for k in range(3):
         if T[0][k] > T[1][k]:
-            pass
+            T1_drops.append((T[0][k]-T[1][k])/(T[0][k]))
         else:
             t1_check = False
-            print(f"ERD fails at {k}")
+            print(f"ERD fails at channel 0{k}")
         if T[0][k] > T[2][k]:
-            pass
+            T2_drops.append((T[0][k]-T[2][k])/(T[0][k]))
         else:
             t2_check = False
-            print(f"ERD fails at {k}")
+            print(f"ERD fails at channel 0{k}")
 
     if t1_check & t2_check:
-        print("ERD passes for subject at T1 and T2 on all channels")
+        print("ERD passes for subject at T1 and T2 on all channels.")
+
+        if T1_drops[2] > T2_drops[2] and T2_drops[0] > T1_drops[0]:
+            print ("lateralization passes for subject on C3 and C4.")
+        else:
+            print ("lateralization failed on one or more channels, check values.")
 
 compute_ERD()

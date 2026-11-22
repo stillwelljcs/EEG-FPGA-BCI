@@ -12,10 +12,10 @@ raw.set_montage("colin27_1005")
 events, event_id = mne.events_from_annotations(raw, event_id={"T0":0, "T1":1, "T2":2})
 channels = ["C3", "Cz", "C4"]
 
-raw.plot(picks = channels, duration = 100, scalings="auto", block=True)
+#raw.plot(picks = channels, duration = 100, scalings="auto", block=True)
 raw_bp = raw.copy().filter(l_freq=8.0, h_freq=30.0, fir_design='firwin')
 
-raw_bp.plot(picks=channels, duration=100, scalings="auto", block=True)
+#raw_bp.plot(picks=channels, duration=100, scalings="auto", block=True)
 
 epochs = mne.Epochs(raw_bp, events, event_id, tmin=0.5, tmax=2.5, baseline=None, picks=channels, preload=True)
 
@@ -34,8 +34,8 @@ print(epochs['T2'].get_data().shape)
 
 #ERD
 
-def compute_power(label):
-    d = epochs[f"T{label}"].get_data()
+def compute_power(label, epochs_set):
+    d = epochs_set[f"T{label}"].get_data()
     n_trials = d.shape[0]
     n_ch = d.shape[1]
     power = np.zeros((n_trials, n_ch))
@@ -48,9 +48,9 @@ def compute_power(label):
 
     return(power)
 
-p0 = compute_power(0)
-p1 = compute_power(1)
-p2 = compute_power(2)
+p0 = compute_power(0, epochs)
+p1 = compute_power(1, epochs)
+p2 = compute_power(2, epochs)
 
 print(epochs.ch_names)
 
@@ -62,7 +62,7 @@ def compute_ERD():
         C3 = 0
         Cz = 0
         C4 = 0
-        p = compute_power(i)
+        p = compute_power(i, epochs)
         for j in p:
             C3_c = j[0]
             Cz_c = j[1]

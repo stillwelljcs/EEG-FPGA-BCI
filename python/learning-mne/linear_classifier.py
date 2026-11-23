@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.model_selection import StratifiedKFold, cross_val_score
+from sklearn.model_selection import StratifiedKFold, RepeatedStratifiedKFold, cross_val_score
+from sklearn.model_selection import permutation_test_score
 from bandpass_epoch import *
 
 raw_bp_mu = raw.copy().filter(l_freq=8.0, h_freq=12.99, fir_design='firwin')
@@ -32,9 +33,17 @@ X = np.hstack([mu, beta])
 y = np.array([0]*23 + [1]*22)
 
 lda = LinearDiscriminantAnalysis()
-cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
+cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=20, random_state=0)
 scores = cross_val_score(lda, X, y, cv=cv)
+
+score, perm_scores, pvalue = permutation_test_score(
+    lda, X, y, cv=cv, n_permutations=1000, random_state=0
+)
 
 print(f"Scores raw: {scores}")
 print(f"Scores average: {scores.mean()}")
 print(f"Scores standard deviation: {scores.std()}")
+
+print(f"Permutation Test Score: {score}")
+print(f"Permutation Test P-Value: {pvalue}")
+print(f"Permutation Test Average: {perm_scores.mean()}")

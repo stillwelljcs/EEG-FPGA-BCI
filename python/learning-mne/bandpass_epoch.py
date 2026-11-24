@@ -4,35 +4,28 @@ import scipy.signal
 import matplotlib.pyplot as plt
 from mne.datasets import eegbci
 
-subj = input("Enter subject number: ")
-files = eegbci.load_data(int(subj), runs=[4, 8, 12]) # load subject x L/R fist movement data
-raw = mne.concatenate_raws([mne.io.read_raw_edf(f, preload=True) for f in files]) #compiles multiple different recordings into one
-eegbci.standardize(raw)  # use standard channel names
-raw.set_montage("colin27_1005")
-events, event_id = mne.events_from_annotations(raw, event_id={"T0":0, "T1":1, "T2":2})
-channels = ["C3", "Cz", "C4"]
+CHANNELS = ["C3", "Cz", "C4"]
+EVENT_ID = {"T0": 0, "T1": 1, "T2": 2}
 
-#raw.plot(picks = channels, duration = 100, scalings="auto", block=True)
-raw_bp = raw.copy().filter(l_freq=8.0, h_freq=30.0, fir_design='firwin')
-
-#raw_bp.plot(picks=channels, duration=100, scalings="auto", block=True)
-
-epochs = mne.Epochs(raw_bp, events, event_id, tmin=0.5, tmax=2.5, baseline=None, picks=channels, preload=True)
+def load_subject(subj, runs=(4, 8, 12)):
+    """Load and concatenate a subject's L/R fist imagery runs."""
+    files = eegbci.load_data(int(subj), runs=list(runs))
+    raw = mne.concatenate_raws([mne.io.read_raw_edf(f, preload=True) for f in files])
+    eegbci.standardize(raw)  # use standard channel names
+    raw.set_montage("colin27_1005")
+    events, event_id = mne.events_from_annotations(raw, event_id=EVENT_ID)
+    return raw, events, event_id
 
 
-print("EPOCHS T0")
-print(epochs['T0'])
-print(epochs['T0'].get_data().shape)
+def bandpass(raw, l_freq, h_freq):
+    """Return a bandpass-filtered copy of raw."""
+    return raw.copy().filter(l_freq=l_freq, h_freq=h_freq, fir_design="firwin")
 
-print("EPOCHS T1")
-print(epochs['T1'])
-print(epochs['T1'].get_data().shape)
 
-print("EPOCHS T2")
-print(epochs['T2'])
-print(epochs['T2'].get_data().shape)
-
-#ERD
+def make_epochs(raw, events, event_id, channels=CHANNELS, tmin=0.5, tmax=2.5):
+    """Cut raw into epochs around each cue."""
+    return mne.Epochs(raw, events, event_id, tmin=tmin, tmax=tmax,
+                      baseline=None, picks=channels, preload=True)
 
 def compute_power(label, epochs_set):
     d = epochs_set[f"T{label}"].get_data()
@@ -48,13 +41,7 @@ def compute_power(label, epochs_set):
 
     return(power)
 
-p0 = compute_power(0, epochs)
-p1 = compute_power(1, epochs)
-p2 = compute_power(2, epochs)
-
-print(epochs.ch_names)
-
-def compute_ERD():
+def compute_ERD(epochs):
 
     T = []
 
@@ -104,4 +91,9 @@ def compute_ERD():
         else:
             print ("lateralization failed on one or more channels, check values.")
 
-compute_ERD()
+if __name__ == "__main__":
+    subj = input("Enter subject number: ")
+    raw, events, event_id = load_subject(subj)
+    raw_bp = bandpass(raw, 8.0, 30.0)
+    epochs = make_epochs(raw_bp, events, event_id)
+    compute_ERD(epochs)

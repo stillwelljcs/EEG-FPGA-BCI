@@ -1,14 +1,13 @@
 import matplotlib.pyplot as plt
+import numpy as np
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.model_selection import StratifiedKFold, RepeatedStratifiedKFold, cross_val_score
 from sklearn.model_selection import permutation_test_score
-from bandpass_epoch import *
+from bandpass_epoch import load_subject, bandpass, make_epochs, compute_power, CHANNELS
 
-raw_bp_mu = raw.copy().filter(l_freq=8.0, h_freq=12.99, fir_design='firwin')
-raw_bp_beta = raw.copy().filter(l_freq=13.0, h_freq=30.0, fir_design='firwin')
-
-epochs_mu = mne.Epochs(raw_bp_mu, events, event_id, tmin=0.5, tmax=2.5, baseline=None, picks=channels, preload=True)
-epochs_beta = mne.Epochs(raw_bp_beta, events, event_id, tmin=0.5, tmax=2.5, baseline=None, picks=channels, preload=True)
+raw, events, event_id = load_subject(1)
+epochs_mu = make_epochs(bandpass(raw, 8.0, 12.0), events, event_id)
+epochs_beta = make_epochs(bandpass(raw, 13.0, 30.0), events, event_id)
 
 mu_features = epochs_mu['T1','T2']
 beta_features = epochs_beta['T1','T2']
